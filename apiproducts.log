@@ -33,3 +33,75 @@
 2025-12-01T00:04:09.578-03:00  INFO 19656 --- [apiproducts] [http-nio-8180-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
 2025-12-01T00:04:09.579-03:00  INFO 19656 --- [apiproducts] [http-nio-8180-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
 2025-12-01T00:04:09.580-03:00  INFO 19656 --- [apiproducts] [http-nio-8180-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-12-01T01:09:42.361-03:00  INFO 24956 --- [apiproducts] [main] c.p.apiproducts.ApiproductsApplication   : Starting ApiproductsApplication using Java 21.0.9 with PID 24956 (C:\Users\PC GAMER\Downloads\apiproducts\target\classes started by PC GAMER in C:\Users\PC GAMER\Downloads\apiproducts)
+2025-12-01T01:09:42.364-03:00  INFO 24956 --- [apiproducts] [main] c.p.apiproducts.ApiproductsApplication   : No active profile set, falling back to 1 default profile: "default"
+2025-12-01T01:09:42.901-03:00  INFO 24956 --- [apiproducts] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-01T01:09:42.955-03:00  INFO 24956 --- [apiproducts] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 44 ms. Found 1 JPA repository interface.
+2025-12-01T01:09:43.392-03:00  INFO 24956 --- [apiproducts] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8180 (http)
+2025-12-01T01:09:43.405-03:00  INFO 24956 --- [apiproducts] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-01T01:09:43.405-03:00  INFO 24956 --- [apiproducts] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.14]
+2025-12-01T01:09:43.455-03:00  INFO 24956 --- [apiproducts] [main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1053 ms
+2025-12-01T01:09:43.589-03:00  INFO 24956 --- [apiproducts] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-01T01:09:43.629-03:00  INFO 24956 --- [apiproducts] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 7.1.8.Final
+2025-12-01T01:09:43.990-03:00  INFO 24956 --- [apiproducts] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-01T01:09:44.019-03:00  INFO 24956 --- [apiproducts] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-01T01:09:44.308-03:00  INFO 24956 --- [apiproducts] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@72e75786
+2025-12-01T01:09:44.310-03:00  INFO 24956 --- [apiproducts] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-01T01:09:44.372-03:00  INFO 24956 --- [apiproducts] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/productosbackend]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.2
+	Default catalog/schema: productosbackend/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DatasourceConnectionProviderImpl
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-12-01T01:09:44.948-03:00  INFO 24956 --- [apiproducts] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-01T01:09:44.998-03:00  INFO 24956 --- [apiproducts] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-01T01:09:45.062-03:00  INFO 24956 --- [apiproducts] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-12-01T01:09:45.163-03:00  WARN 24956 --- [apiproducts] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-01T01:09:45.427-03:00  INFO 24956 --- [apiproducts] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8180 (http) with context path '/'
+2025-12-01T01:09:45.432-03:00  INFO 24956 --- [apiproducts] [main] c.p.apiproducts.ApiproductsApplication   : Started ApiproductsApplication in 3.464 seconds (process running for 3.791)
+2025-12-01T01:10:05.896-03:00  INFO 24956 --- [apiproducts] [http-nio-8180-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-01T01:10:05.896-03:00  INFO 24956 --- [apiproducts] [http-nio-8180-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-01T01:10:05.897-03:00  INFO 24956 --- [apiproducts] [http-nio-8180-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-12-01T01:24:42.679-03:00  INFO 15788 --- [apiproducts] [main] c.p.apiproducts.ApiproductsApplication   : Starting ApiproductsApplication using Java 21.0.9 with PID 15788 (C:\Users\PC GAMER\Downloads\apiproducts\target\classes started by PC GAMER in C:\Users\PC GAMER\Downloads\apiproducts)
+2025-12-01T01:24:42.682-03:00  INFO 15788 --- [apiproducts] [main] c.p.apiproducts.ApiproductsApplication   : No active profile set, falling back to 1 default profile: "default"
+2025-12-01T01:24:43.405-03:00  INFO 15788 --- [apiproducts] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-01T01:24:43.454-03:00  INFO 15788 --- [apiproducts] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 38 ms. Found 1 JPA repository interface.
+2025-12-01T01:24:43.875-03:00  INFO 15788 --- [apiproducts] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8180 (http)
+2025-12-01T01:24:43.889-03:00  INFO 15788 --- [apiproducts] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-01T01:24:43.890-03:00  INFO 15788 --- [apiproducts] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.14]
+2025-12-01T01:24:43.949-03:00  INFO 15788 --- [apiproducts] [main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1229 ms
+2025-12-01T01:24:44.088-03:00  INFO 15788 --- [apiproducts] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-01T01:24:44.129-03:00  INFO 15788 --- [apiproducts] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 7.1.8.Final
+2025-12-01T01:24:44.513-03:00  INFO 15788 --- [apiproducts] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-01T01:24:44.541-03:00  INFO 15788 --- [apiproducts] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-01T01:24:44.802-03:00  INFO 15788 --- [apiproducts] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@670c171c
+2025-12-01T01:24:44.804-03:00  INFO 15788 --- [apiproducts] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-01T01:24:44.864-03:00  INFO 15788 --- [apiproducts] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/productosbackend]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.2
+	Default catalog/schema: productosbackend/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DatasourceConnectionProviderImpl
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-12-01T01:24:45.435-03:00  INFO 15788 --- [apiproducts] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-01T01:24:45.485-03:00  INFO 15788 --- [apiproducts] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-01T01:24:45.549-03:00  INFO 15788 --- [apiproducts] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-12-01T01:24:45.739-03:00  WARN 15788 --- [apiproducts] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-01T01:24:45.789-03:00  INFO 15788 --- [apiproducts] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-12-01T01:24:46.081-03:00  INFO 15788 --- [apiproducts] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8180 (http) with context path '/'
+2025-12-01T01:24:46.086-03:00  INFO 15788 --- [apiproducts] [main] c.p.apiproducts.ApiproductsApplication   : Started ApiproductsApplication in 3.781 seconds (process running for 4.114)
+2025-12-01T01:24:55.144-03:00  INFO 15788 --- [apiproducts] [http-nio-8180-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-01T01:24:55.144-03:00  INFO 15788 --- [apiproducts] [http-nio-8180-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-01T01:24:55.145-03:00  INFO 15788 --- [apiproducts] [http-nio-8180-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-12-01T01:24:55.616-03:00  INFO 15788 --- [apiproducts] [http-nio-8180-exec-10] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 192 ms
