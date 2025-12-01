@@ -56,6 +56,11 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
 
     // Aplicar filtros a un array de productos
     const applyFilters = (productos: Producto[]): Producto[] => {
+        // Validación defensiva: asegurar que productos sea un array
+        if (!Array.isArray(productos)) {
+            return [];
+        }
+        
         let filtered = productos;
 
         // Filtrar por forma

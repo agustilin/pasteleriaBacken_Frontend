@@ -1,19 +1,23 @@
 import { useState } from 'react';
-import { useAdmin } from '../../../context/AdminContext';
+import { useAdmin } from '../../../context/useAdmin';
 import { ProductItem } from './ProductItem';
 import { ProductForm } from './ProductForm';
 import type { Producto } from '../../../data/productos';
 
 export const ProductList = () => {
-    const { productos, agregarProducto, actualizarProducto, eliminarProducto } = useAdmin();
+    const { productos, agregarProducto, actualizarProducto, eliminarProducto, loading, error } = useAdmin();
     const [showForm, setShowForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Producto | undefined>(undefined);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterForma, setFilterForma] = useState<string>('todas');
     const [filterTamanio, setFilterTamanio] = useState<string>('todos');
+    if (loading) return <p className="p-4">Cargando productos...</p>;
+    if (error) return <p className="p-4 text-red-600">Error: {error}</p>;
 
+    // Asegurar que productos sea un array
+    const sourceProductos: Producto[] = Array.isArray(productos) ? productos : [];
     // Filtrar productos
-    const productosFiltrados = productos.filter(producto => {
+    const productosFiltrados = sourceProductos.filter((producto: Producto) => {
         const matchesSearch = producto.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesForma = filterForma === 'todas' || producto.forma === filterForma;
@@ -112,18 +116,18 @@ export const ProductList = () => {
             <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600">Total Productos</p>
-                    <p className="text-2xl font-bold text-blue-600">{productos.length}</p>
+                    <p className="text-2xl font-bold text-blue-600">{sourceProductos.length}</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600">En Stock</p>
                     <p className="text-2xl font-bold text-green-600">
-                        {productos.filter(p => (p.stock || 0) > 0).length}
+                        {sourceProductos.filter((p: Producto) => (p.stock || 0) > 0).length}
                     </p>
                 </div>
                 <div className="bg-red-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600">Sin Stock</p>
                     <p className="text-2xl font-bold text-red-600">
-                        {productos.filter(p => (p.stock || 0) === 0).length}
+                        {sourceProductos.filter((p: Producto) => (p.stock || 0) === 0).length}
                     </p>
                 </div>
             </div>
@@ -131,7 +135,7 @@ export const ProductList = () => {
             {/* Lista de productos */}
             <div className="space-y-4">
                 {productosFiltrados.length > 0 ? (
-                    productosFiltrados.map(producto => (
+                    productosFiltrados.map((producto: Producto) => (
                         <ProductItem
                             key={producto.id}
                             producto={producto}

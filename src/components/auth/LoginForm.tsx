@@ -44,6 +44,7 @@ export const LoginForm = () => {
             const listaUsuarios = JSON.parse(usuariosRegistrados);
             
             // Buscar usuario por email
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const usuarioEncontrado = listaUsuarios.find((u: any) => u.email === formData.email);
             
             if (usuarioEncontrado) {

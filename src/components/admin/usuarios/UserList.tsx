@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAdmin } from '../../../context/AdminContext';
+import { useAdmin } from '../../../context/useAdmin';
 import { UserItem } from './UserItem';
 import { UserForm } from './UserForm';
 import type { Usuario } from '../../../data/Usuario';

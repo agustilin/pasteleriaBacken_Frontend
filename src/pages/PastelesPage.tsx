@@ -1,12 +1,16 @@
 import { ContainerFilter } from "../components/productos/containerFilter";
 import { FilteredProductsGrid } from "../components/productos/FilteredProductsGrid";
-import { productos } from "../data/productos";
 import { useFilters } from "../context/FilterContext";
+import { useAdmin } from "../context/useAdmin";
 
 export const PastelesPage = () => {
     const { applyFilters, filters } = useFilters();
+    const { productos, loading, error } = useAdmin();
     const filteredProducts = applyFilters(productos);
     const hasActiveFilters = filters.formas.length > 0 || filters.tamanios.length > 0;
+
+    if (loading) return <p className="text-center py-12">Cargando productos...</p>;
+    if (error) return <p className="text-center py-12 text-red-600">Error: {error}</p>;
 
     return (
         <>

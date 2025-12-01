@@ -1,35 +1,37 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { productos as productosIniciales, type Producto } from '../data/productos';
+import { useState, useEffect, type ReactNode } from 'react';
+import type { Producto } from '../data/productos'; 
+import { fetchProductos, createProducto, updateProducto, deleteProducto } from '../api/productos.service';
 import type { Usuario } from '../data/Usuario';
-
-interface AdminContextType {
-    // Productos
-    productos: Producto[];
-    agregarProducto: (producto: Omit<Producto, 'id'>) => void;
-    actualizarProducto: (id: number, producto: Partial<Producto>) => void;
-    eliminarProducto: (id: number) => void;
-    
-    // Usuarios
-    usuarios: Usuario[];
-    actualizarUsuario: (email: string, usuario: Partial<Usuario>) => void;
-    eliminarUsuario: (email: string) => void;
-}
-
-const AdminContext = createContext<AdminContextType | undefined>(undefined);
+import { AdminContext } from './AdminContextBase';
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
-    // Estado de productos
-    const [productos, setProductos] = useState<Producto[]>(() => {
-        const savedProductos = localStorage.getItem('productos');
-        if (savedProductos) {
-            try {
-                return JSON.parse(savedProductos);
-            } catch {
-                return productosIniciales;
-            }
+    const [productos, setProductos] = useState<Producto[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+  // Cargar desde API
+    useEffect(() => {
+    const load = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+        const data = await fetchProductos();
+        setProductos(data);
+        } catch (e: unknown) {
+        let message = 'Error cargando productos';
+        if (e instanceof Error && e.message) {
+            message = e.message;
+        } else if (typeof e === 'object' && e !== null && 'response' in e) {
+            const resp = (e as { response?: { data?: { message?: string } } }).response;
+            message = resp?.data?.message ?? message;
         }
-        return productosIniciales;
-    });
+        setError(message);
+        } finally {
+        setLoading(false);
+        }
+    };
+    load();
+    }, []);
 
     // Estado de usuarios
     const [usuarios, setUsuarios] = useState<Usuario[]>(() => {
@@ -45,34 +47,30 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     });
 
     // Guardar productos en localStorage cuando cambien
-    useEffect(() => {
-        localStorage.setItem('productos', JSON.stringify(productos));
-    }, [productos]);
+    //useEffect(() => {
+       // localStorage.setItem('productos', JSON.stringify(productos));
+    //}, [productos]);
 
+    
     // Guardar usuarios en localStorage cuando cambien
     useEffect(() => {
         localStorage.setItem('usuariosRegistrados', JSON.stringify(usuarios));
     }, [usuarios]);
 
     // Funciones CRUD para productos
-    const agregarProducto = (nuevoProducto: Omit<Producto, 'id'>) => {
-        const nuevoId = Math.max(...productos.map(p => p.id), 0) + 1;
-        const productoCompleto: Producto = {
-            ...nuevoProducto,
-            id: nuevoId,
-            stock: nuevoProducto.stock || 0
-        };
-        setProductos([...productos, productoCompleto]);
+    const agregarProducto = async (nuevo: Omit<Producto, 'id'>) => {
+        const creado = await createProducto(nuevo);
+        setProductos(prev => [...prev, creado]);
     };
 
-    const actualizarProducto = (id: number, productoActualizado: Partial<Producto>) => {
-        setProductos(productos.map(p => 
-            p.id === id ? { ...p, ...productoActualizado } : p
-        ));
+    const actualizarProducto = async (id: number, parcial: Partial<Producto>) => {
+        const actualizado = await updateProducto(id, parcial);
+        setProductos(prev => prev.map(p => p.id === id ? actualizado : p));
     };
 
-    const eliminarProducto = (id: number) => {
-        setProductos(productos.filter(p => p.id !== id));
+    const eliminarProducto = async (id: number) => {
+        await deleteProducto(id);
+        setProductos(prev => prev.filter(p => p.id !== id));
     };
 
     // Funciones CRUD para usuarios
@@ -90,6 +88,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         <AdminContext.Provider
             value={{
                 productos,
+                loading,
+                error,
                 agregarProducto,
                 actualizarProducto,
                 eliminarProducto,
@@ -101,12 +101,4 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
             {children}
         </AdminContext.Provider>
     );
-};
-
-export const useAdmin = () => {
-    const context = useContext(AdminContext);
-    if (!context) {
-        throw new Error('useAdmin must be used within an AdminProvider');
-    }
-    return context;
 };

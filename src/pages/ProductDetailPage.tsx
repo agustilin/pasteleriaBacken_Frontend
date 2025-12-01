@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { productos, type Producto } from "../data/productos";
+import type { Producto } from "../data/productos";
+import { fetchProducto } from "../api/productos.service";
 import { ProductImage } from "../components/product/ProductImage";
 import { ProductInfo } from "../components/product/ProductInfo";
 import { ProductActions } from "../components/product/ProductActions";
@@ -10,13 +11,29 @@ import { HiArrowLeft } from "react-icons/hi";
 export const ProductDetailPage = () => {
     const { id } = useParams();
     const [producto, setProducto] = useState<Producto | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const foundProducto = productos.find(p => p.id === Number(id));
-        if (foundProducto) {
-            setProducto(foundProducto);
-        }
+        const load = async () => {
+            if (!id) return;
+            setLoading(true);
+            setError(null);
+            try {
+                const data = await fetchProducto(Number(id));
+                setProducto(data);
+            } catch (e: unknown) {
+                const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Producto no encontrado';
+                setError(message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
     }, [id]);
+
+    if (loading) return <p className="text-center py-12">Cargando producto...</p>;
+    if (error) return <ProductNotFound />;
 
     if (!producto) {
         return <ProductNotFound />;

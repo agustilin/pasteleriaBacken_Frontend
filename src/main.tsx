@@ -6,18 +6,21 @@ import { CartProvider } from './context/CartContext'
 import { FilterProvider } from './context/FilterContext'
 import { UserProvider } from './context/UserContext'
 import { PedidosProvider } from './context/PedidosContext'
+import { AdminProvider } from './context/AdminContext'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <UserProvider>
-      <PedidosProvider>
-        <CartProvider>
-          <FilterProvider>
-            <RouterProvider router={router} />
-          </FilterProvider>
-        </CartProvider>
-      </PedidosProvider>
-    </UserProvider>
+    <AdminProvider>
+      <UserProvider>
+        <PedidosProvider>
+          <CartProvider>
+            <FilterProvider>
+              <RouterProvider router={router} />
+            </FilterProvider>
+          </CartProvider>
+        </PedidosProvider>
+      </UserProvider>
+    </AdminProvider>
   </StrictMode>,
 )

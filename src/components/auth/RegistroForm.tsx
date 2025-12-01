@@ -161,6 +161,10 @@ export const RegistroForm = () => {
         
         alert(mensaje);
         navigate("/account");
+        if(esAdmin(formData.email)){
+            alert("¡Bienvenido Administrador!");
+            navigate("/admin");
+        }
     };
 
     return (

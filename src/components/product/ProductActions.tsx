@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { HiMinus, HiPlus, HiShoppingCart } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import type { Producto } from "../../data/productos";
+import type { Producto } from "../../data/productos"; //localStorage
 import { useCart } from "../../context/CartContext";
 
 interface ProductActionsProps {
