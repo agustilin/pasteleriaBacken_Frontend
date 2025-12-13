@@ -54,7 +54,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 export const useNotification = () => {
     const ctx = useContext(NotificationContext);
     if (!ctx) {
-        // Fallback no-op to evitar crash en entornos sin provider (tests o páginas aisladas)
         return {
             showNotification: () => {/* noop */},
             closeNotification: () => {/* noop */},

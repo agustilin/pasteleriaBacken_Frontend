@@ -3,7 +3,7 @@ import type { Producto } from '../data/productos';
 import { fetchProductos, createProducto, updateProducto, deleteProducto } from '../api/productos.service';
 import type { Usuario } from '../data/Usuario';
 import { fetchUsuarios, createUsuario, updateUsuario as updateUsuarioAPI, deleteUsuario } from '../api/usuarios.service';
-import { listarPedidosUsuario } from '../api/pedidos.service';
+import { listarPedidosUsuario, listarPedidos } from '../api/pedidos.service';
 import { AdminContext } from './AdminContextBase';
 import { useNotification } from './NotificationContext';
 
@@ -108,6 +108,40 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const eliminarProducto = async (id: number) => {
+        // Verificar si el producto está en algún pedido
+        try {
+            const todosLosPedidos = await listarPedidos();
+            const productosEnUso = new Set<number>();
+            
+            todosLosPedidos.forEach((pedido: any) => {
+                if (pedido.items && Array.isArray(pedido.items)) {
+                    pedido.items.forEach((item: any) => {
+                        const productoId = item.productoId || item.producto?.id || item.id;
+                        if (productoId) {
+                            productosEnUso.add(Number(productoId));
+                        }
+                    });
+                }
+            });
+
+            if (productosEnUso.has(id)) {
+                showNotification({
+                    type: 'warning',
+                    title: 'No se puede eliminar',
+                    message: 'Este producto está asociado a uno o más pedidos y no puede ser eliminado.',
+                });
+                return;
+            }
+        } catch (e) {
+            console.error('Error verificando pedidos con este producto:', e);
+            showNotification({
+                type: 'error',
+                title: 'Error al verificar',
+                message: 'No se pudo verificar si el producto está en uso. Intenta nuevamente.',
+            });
+            return;
+        }
+
         await deleteProducto(id);
         setProductos(prev => prev.filter(p => p.id !== id));
     };
