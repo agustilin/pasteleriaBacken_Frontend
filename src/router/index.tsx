@@ -26,7 +26,6 @@ export const router = createBrowserRouter([
             element: <HomePage/>,
         },
         {
-            //Sin slash pq se colocan solos wey
             path: 'pasteles',
             element: <PastelesPage/>,
         },

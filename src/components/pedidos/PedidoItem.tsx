@@ -41,14 +41,25 @@ export const PedidoItem = ({ pedido }: PedidoItemProps) => {
             <div className="border-t pt-4">
                 <h4 className="font-medium text-sm text-gray-700 mb-3">Productos ({pedido.items.length})</h4>
                 <div className="space-y-2 mb-4">
-                    {pedido.items.map((item, index) => (
-                        <div key={index} className="flex justify-between text-sm">
-                            <span className="text-gray-600">
-                                {item.quantity}x {item.titulo}
-                            </span>
-                            <span className="font-medium">{formatPrice(item.precio * item.quantity)}</span>
-                        </div>
-                    ))}
+                    {pedido.items.map((item, index) => {
+                        const anyItem = item as any;
+                        const cantidad = Number(anyItem.quantity ?? 0);
+                        const titulo = anyItem.titulo
+                            ?? anyItem.nombre
+                            ?? anyItem.producto?.nombre
+                            ?? anyItem.producto?.titulo
+                            ?? 'Producto';
+                        const precioUnitario = Number(anyItem.precio ?? anyItem.price ?? anyItem.producto?.precio ?? 0);
+
+                        return (
+                            <div key={index} className="flex justify-between text-sm">
+                                <span className="text-gray-600">
+                                    {cantidad}x {titulo}
+                                </span>
+                                <span className="font-medium">{formatPrice(precioUnitario * cantidad)}</span>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 <div className="border-t pt-3 space-y-2">

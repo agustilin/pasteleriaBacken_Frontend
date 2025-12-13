@@ -2,7 +2,7 @@ import { useState } from "react";
 import { HiMinus, HiPlus, HiShoppingCart } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import type { Producto } from "../../data/productos"; //localStorage
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/useCart";
 
 interface ProductActionsProps {
     producto: Producto;
@@ -27,6 +27,7 @@ export const ProductActions = ({ producto }: ProductActionsProps) => {
     };
 
     const isOutOfStock = producto.stock !== undefined && producto.stock === 0;
+    const maxQuantity = producto.stock !== undefined ? producto.stock : 999;
 
     return (
         <div className="space-y-6 border-t border-slate-200 pt-6">
@@ -50,9 +51,9 @@ export const ProductActions = ({ producto }: ProductActionsProps) => {
                     </span>
                     
                     <button
-                        onClick={() => setQuantity(quantity + 1)}
+                        onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
                         className="p-2 border border-slate-300 hover:bg-gray-100 rounded-lg transition-colors"
-                        disabled={isOutOfStock}
+                        disabled={isOutOfStock || quantity >= maxQuantity}
                     >
                         <HiPlus size={20} />
                     </button>

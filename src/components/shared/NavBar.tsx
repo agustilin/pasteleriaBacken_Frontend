@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { FaBarsStaggered } from "react-icons/fa6";
 import { Logo } from "./Logo";
 import { CgMenuCake } from 'react-icons/cg';
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/useCart";
 
 export const NavBar = () =>{
     

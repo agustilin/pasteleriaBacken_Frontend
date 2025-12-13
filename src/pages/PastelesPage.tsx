@@ -10,7 +10,7 @@ export const PastelesPage = () => {
     const hasActiveFilters = filters.formas.length > 0 || filters.tamanios.length > 0;
 
     if (loading) return <p className="text-center py-12">Cargando productos...</p>;
-    if (error) return <p className="text-center py-12 text-red-600">Error: {error}</p>;
+    if (error) return <p className="text-center py-12 text-red-600">Error: {error} --Revisar estado de la API</p>;
 
     return (
         <>

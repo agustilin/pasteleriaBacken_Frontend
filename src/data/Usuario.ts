@@ -1,7 +1,9 @@
 export interface Usuario {
+  id?: number; // Backend generates this
   nombre: string;
   email: string;
-  telefono: string;
+  password?: string; // Solo se envía al registrar
+  telefono: number;
   fechaNacimiento: string; // formato ISO
   direccion: string;
   codigoPromocional?: string; // Código usado en el registro
@@ -14,7 +16,7 @@ export interface Usuario {
   añoTortaGratisCumpleanos?: number; // Año en que usó la torta gratis
 }
 
-// Función helper para calcular edad
+// Función para calcular edad
 export const calcularEdad = (fechaNacimiento: string): number => {
   const hoy = new Date();
   const nacimiento = new Date(fechaNacimiento);
@@ -28,7 +30,7 @@ export const calcularEdad = (fechaNacimiento: string): number => {
   return edad;
 };
 
-// Función helper para verificar si es correo Duoc
+// Función para verificar si es correo Duoc
 export const esDuocEmail = (email: string): boolean => {
   const emailLower = email.toLowerCase();
   return emailLower.endsWith('@duoc.cl') || emailLower.endsWith('@duocuc.cl');
@@ -36,10 +38,10 @@ export const esDuocEmail = (email: string): boolean => {
 
 export const esAdmin = (email: string): boolean => {
   const emailLower = email.toLowerCase();
-  return emailLower.endsWith('@admin.cl') || emailLower.endsWith('@admin.com');
+  return emailLower.endsWith('@admin.com');
 };
 
-// Función helper para verificar si es cumpleaños hoy
+// Función para verificar si es cumpleaños hoy
 export const esCumpleanosHoy = (fechaNacimiento: string): boolean => {
   const hoy = new Date();
   const nacimiento = new Date(fechaNacimiento);

@@ -3,7 +3,7 @@ import { DashboardNav } from '../components/admin/DashboardNav';
 import { ProductList } from '../components/admin/productos/ProductList';
 import { UserList } from '../components/admin/usuarios/UserList';
 import UsuariosConCompras from '../components/admin/usuarios/UsuariosConCompras';
-import { UserContext } from '../context/UserContext';
+import { UserContext } from '../context/UserContextBase';
 import { RestrictedAccess } from '../components/account/RestrictedAccess';
 import { esAdmin } from '../data/Usuario';
 

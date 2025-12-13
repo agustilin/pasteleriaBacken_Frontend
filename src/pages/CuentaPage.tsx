@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../context/useUser";
 import { usePedidos } from "../context/PedidosContext";
 import { RestrictedAccess } from "../components/account/RestrictedAccess";
 import { UserProfile } from "../components/account/UserProfile";

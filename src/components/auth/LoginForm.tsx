@@ -4,9 +4,10 @@ import { HiMail, HiLockClosed } from "react-icons/hi";
 import { InputField } from "./InputField";
 import { RememberMeCheckbox } from "./RememberMeCheckbox";
 import { ForgotPasswordLink } from "./ForgotPasswordLink";
-import { useUser } from "../../context/UserContext";
+import { useUser } from "../../context/useUser";
 import { AUTH_MESSAGES } from "../../constants/messages";
 import { esAdmin } from "../../data/Usuario";
+import { useNotification } from "../../context/NotificationContext";
 
 interface LoginFormData {
     email: string;
@@ -20,6 +21,7 @@ export const LoginForm = () => {
     });
     const navigate = useNavigate();
     const { login } = useUser();
+    const { showNotification } = useNotification();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -28,41 +30,62 @@ export const LoginForm = () => {
         });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Buscar usuario en la lista de usuarios registrados
-        const usuariosRegistrados = localStorage.getItem('usuariosRegistrados');
-        
-        if (!usuariosRegistrados) {
-            alert(AUTH_MESSAGES.NO_USERS_REGISTERED);
-            navigate("/registro");
+        if (!formData.email || !formData.password) {
+            showNotification({
+                type: 'warning',
+                title: 'Campos requeridos',
+                message: "Por favor ingresa email y contraseña",
+            });
             return;
         }
-
+        
         try {
-            const listaUsuarios = JSON.parse(usuariosRegistrados);
+            // Hacer login con email y password 
+            await login(formData.email, formData.password);
             
-            // Buscar usuario por email
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const usuarioEncontrado = listaUsuarios.find((u: any) => u.email === formData.email);
+            // Login exitoso
+            showNotification({
+                type: 'success',
+                title: 'Sesión iniciada',
+                message: "¡Sesión iniciada exitosamente!",
+            });
             
-            if (usuarioEncontrado) {
-                // Login exitoso - cargar usuario en el contexto
-                login(usuarioEncontrado);
-                alert("¡Sesión iniciada exitosamente!");
+            if(esAdmin(formData.email)){
+                showNotification({
+                    type: 'info',
+                    title: 'Bienvenido',
+                    message: "¡Bienvenido Administrador!",
+                });
+                navigate("/admin");
+            } else {
                 navigate("/account");
             }
-            if(esAdmin(formData.email)){
-                alert("¡Bienvenido Administrador!");
-                navigate("/admin");
+        } catch (error) {
+            // Mostrar error de credenciales
+            const errorMessage = error instanceof Error ? error.message : AUTH_MESSAGES.LOGIN_ERROR;
+            
+            if (errorMessage.includes("Email o contraseña")) {
+                showNotification({
+                    type: 'error',
+                    title: 'Credenciales inválidas',
+                    message: "Email o contraseña incorrectos",
+                });
+            } else if (errorMessage.includes("no encontrado") || errorMessage.includes("not found")) {
+                showNotification({
+                    type: 'info',
+                    title: 'Usuario no registrado',
+                    message: AUTH_MESSAGES.EMAIL_NOT_REGISTERED,
+                });
+            } else {
+                showNotification({
+                    type: 'error',
+                    title: 'No se pudo iniciar sesión',
+                    message: errorMessage,
+                });
             }
-            else {
-                alert(AUTH_MESSAGES.EMAIL_NOT_REGISTERED);
-                navigate("/registro");
-            }
-        } catch {
-            alert(AUTH_MESSAGES.LOGIN_ERROR);
         }
     };
 

@@ -1,5 +1,5 @@
 import { BiChevronRight } from "react-icons/bi"
-import { Link } from "react-router-dom"
+import { Link } from 'react-router-dom';
 import { socialLinks } from "../../constants/links"
 
 export const Footer = () => {
@@ -72,6 +72,11 @@ export const Footer = () => {
                         }
 
                     </div>
+                    <button className="text-slate-300 border border-gray-500 mt-5 ml-45 w-25 flex items-center justify-center hover:bg-white hover:text-gray-950">
+                        <Link to="/admin" className="w-full h-full flex items-center justify-center py-3.5">
+                            Administrador
+                        </Link>
+                    </button>
                 </div>
         </footer>
     )

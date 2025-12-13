@@ -1,47 +1,93 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import type { Usuario } from '../data/Usuario';
-
-interface UserContextType {
-    user: Usuario | null;
-    login: (userData: Usuario) => void;
-    logout: () => void;
-    isAuthenticated: boolean;
-}
-
-export const UserContext = createContext<UserContextType | undefined>(undefined);
+import { fetchUsuarioPorEmail, updateUsuario, login as loginAPI } from '../api/usuarios.service';
+import { UserContext } from './UserContextBase';
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<Usuario | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
-    // Cargar usuario desde localStorage al iniciar
+    // Cargar usuario desde localStorage (token/email del usuario logueado)
+    // En una app real, esto sería un JWT o sesión del servidor
     useEffect(() => {
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-            try {
-                const parsedUser = JSON.parse(savedUser);
-                setUser(parsedUser);
-            } catch {
-                // Si hay error, limpiar datos corruptos
-                localStorage.removeItem('user');
-            }
+        const savedEmail = localStorage.getItem('userEmail');
+        if (savedEmail) {
+            loadUserFromAPI(savedEmail);
         }
     }, []);
 
-    // Guardar usuario en localStorage cada vez que cambie
-    useEffect(() => {
-        if (user) {
-            localStorage.setItem('user', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('user');
+    const loadUserFromAPI = async (email: string) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const userData = await fetchUsuarioPorEmail(email);
+            setUser(userData);
+        } catch (e: unknown) {
+            let message = 'Error cargando usuario';
+            if (e instanceof Error && e.message) {
+                message = e.message;
+            }
+            setError(message);
+            setUser(null);
+        } finally {
+            setLoading(false);
         }
-    }, [user]);
+    };
 
-    const login = (userData: Usuario) => {
-        setUser(userData);
+    const login = async (email: string, password?: string) => {
+        setLoading(true);
+        setError(null);
+        try {
+            // Si se proporciona password, usar endpoint de login que valida credenciales
+            if (password) {
+                const userData = await loginAPI(email, password);
+                setUser(userData);
+                localStorage.setItem('userEmail', email);
+            } else {
+                // Si no hay password, solo cargar el usuario (para sesiones existentes)
+                const userData = await fetchUsuarioPorEmail(email);
+                setUser(userData);
+                localStorage.setItem('userEmail', email);
+            }
+        } catch (e: unknown) {
+            let message = 'Error al iniciar sesión';
+            if (e instanceof Error && e.message) {
+                message = e.message;
+            }
+            setError(message);
+            setUser(null);
+            throw e;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const logout = () => {
         setUser(null);
+        localStorage.removeItem('userEmail');
+        setError(null);
+    };
+
+    const updateUserData = async (usuarioActualizado: Partial<Usuario>) => {
+        if (!user || !user.id) {
+            throw new Error('No hay usuario logueado');
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            const updated = await updateUsuario(user.id, usuarioActualizado);
+            setUser(updated);
+        } catch (e: unknown) {
+            let message = 'Error actualizando usuario';
+            if (e instanceof Error && e.message) {
+                message = e.message;
+            }
+            setError(message);
+            throw e;
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -51,17 +97,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 login,
                 logout,
                 isAuthenticated: !!user,
+                loading,
+                error,
+                updateUserData,
             }}
         >
             {children}
         </UserContext.Provider>
     );
-};
-
-export const useUser = () => {
-    const context = useContext(UserContext);
-    if (!context) {
-        throw new Error('useUser must be used within a UserProvider');
-    }
-    return context;
 };

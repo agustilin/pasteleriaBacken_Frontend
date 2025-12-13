@@ -2,14 +2,16 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { HiMail, HiLockClosed, HiUser, HiPhone, HiCalendar, HiLocationMarker, HiTag } from "react-icons/hi";
 import { InputField } from "./InputField";
-import { useUser } from "../../context/UserContext";
-import { calcularEdad, esAdmin, esDuocEmail, type Usuario } from "../../data/Usuario";
+import { useUser } from "../../context/useUser";
+import { calcularEdad, esDuocEmail, type Usuario } from "../../data/Usuario";
 import { AUTH_MESSAGES } from "../../constants/messages";
+import { createUsuario, checkEmailExists } from "../../api/usuarios.service";
+import { useNotification } from "../../context/NotificationContext";
 
 interface RegistroFormData {
     nombre: string;
     email: string;
-    telefono: string;
+    telefono: number;
     fechaNacimiento: string;
     direccion: string;
     codigoPromocional: string;
@@ -21,7 +23,7 @@ export const RegistroForm = () => {
     const [formData, setFormData] = useState<RegistroFormData>({
         nombre: "",
         email: "",
-        telefono: "",
+        telefono: 0,
         fechaNacimiento: "",
         direccion: "",
         codigoPromocional: "",
@@ -31,23 +33,30 @@ export const RegistroForm = () => {
     const [promoInfo, setPromoInfo] = useState<string>("");
     const navigate = useNavigate();
     const { login } = useUser();
+    const { showNotification } = useNotification();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        
-        setFormData({
-            ...formData,
-            [name]: value
-        });
+
+        // normalizar telefono como número
+        if (name === 'telefono') {
+            const numeric = value.replace(/[^0-9]/g, '');
+            setFormData({
+                ...formData,
+                telefono: numeric ? Number(numeric) : 0,
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value
+            });
+        }
 
         // Mostrar información de promociones aplicables
         if (name === 'email') {
             if (esDuocEmail(value)) {
                 setPromoInfo(" ¡Correo Duoc UC detectado! Recibirás una torta gratis en tu cumpleaños.");
             } 
-            if (esAdmin(value)) {
-                setPromoInfo(" ¡Correo de administrador detectado!.");
-            }
             else {
                 setPromoInfo("");
             }
@@ -74,16 +83,47 @@ export const RegistroForm = () => {
         return adjustedAge <= 102 && adjustedAge >= 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
+        // Validar que no intente crear cuenta de administrador
+        const emailLowercase = formData.email.toLowerCase();
+        if (emailLowercase.includes("@admin") || emailLowercase.includes("admin")) {
+            showNotification({
+                type: 'warning',
+                title: 'Correo no permitido',
+                message: "No se permiten crear cuentas con correos de administrador.\n\nPor favor, utiliza un correo válido.",
+            });
+            // Limpiar todos los campos
+                setFormData({
+                    nombre: "",
+                    email: "",
+                    telefono: 0,
+                    fechaNacimiento: "",
+                    direccion: "",
+                    codigoPromocional: "",
+                    password: "",
+                    confirmPassword: ""
+                });
+            setPromoInfo("");
+            return;
+        }
+        
         if (formData.password !== formData.confirmPassword) {
-            alert("Las contraseñas no coinciden");
+            showNotification({
+                type: 'warning',
+                title: 'Contraseñas no coinciden',
+                message: "Las contraseñas no coinciden",
+            });
             return;
         }
 
         if (!validateAge(formData.fechaNacimiento)) {
-            alert("La fecha de nacimiento no es válida. La edad debe ser menor o igual a 102 años.");
+            showNotification({
+                type: 'warning',
+                title: 'Fecha no válida',
+                message: "La fecha de nacimiento no es válida. La edad debe ser menor o igual a 102 años.",
+            });
             return;
         }
 
@@ -113,6 +153,7 @@ export const RegistroForm = () => {
         const nuevoUsuario: Usuario = {
             nombre: formData.nombre,
             email: formData.email,
+            password: formData.password,
             telefono: formData.telefono,
             fechaNacimiento: formData.fechaNacimiento,
             direccion: formData.direccion,
@@ -125,45 +166,54 @@ export const RegistroForm = () => {
             tortaGratisCumpleanosUsada: false,
         };
 
-        // Guardar usuario en la lista de usuarios registrados
-        const usuariosRegistrados = localStorage.getItem('usuariosRegistrados');
-        let listaUsuarios = [];
-        
-        if (usuariosRegistrados) {
-            try {
-                listaUsuarios = JSON.parse(usuariosRegistrados);
-            } catch {
-                listaUsuarios = [];
+        // Verificar si el email ya existe en la base de datos
+        try {
+            const emailExiste = await checkEmailExists(formData.email);
+            if (emailExiste) {
+                showNotification({
+                    type: 'info',
+                    title: 'Email registrado',
+                    message: AUTH_MESSAGES.EMAIL_ALREADY_REGISTERED,
+                });
+                navigate("/login");
+                return;
             }
-        }
-
-        // Verificar si el email ya existe
-        const emailExiste = listaUsuarios.some((u: Usuario) => u.email === nuevoUsuario.email);
-        
-        if (emailExiste) {
-            alert(AUTH_MESSAGES.EMAIL_ALREADY_REGISTERED);
-            navigate("/login");
+        } catch {
+            showNotification({
+                type: 'error',
+                message: "Error verificando email. Por favor intenta de nuevo.",
+            });
             return;
         }
 
-        // Agregar nuevo usuario a la lista
-        listaUsuarios.push(nuevoUsuario);
-        localStorage.setItem('usuariosRegistrados', JSON.stringify(listaUsuarios));
+        // Crear usuario en la base de datos
+        try {
+            await createUsuario(nuevoUsuario);
+            
+            // Iniciar sesión automáticamente con el email
+            await login(formData.email);
+            
+            // Mostrar mensaje con beneficios
+            let mensaje = "¡Cuenta creada exitosamente!";
+            if (beneficios.length > 0) {
+                mensaje += "\n\nTus beneficios:\n• " + beneficios.join("\n• ");
+            }
 
-        // Guardar usuario en el contexto (iniciar sesión automáticamente)
-        login(nuevoUsuario);
-        
-        // Mostrar mensaje con beneficios
-        let mensaje = "¡Cuenta creada exitosamente!";
-        if (beneficios.length > 0) {
-            mensaje += "\n\nTus beneficios:\n• " + beneficios.join("\n• ");
-        }
-        
-        alert(mensaje);
-        navigate("/account");
-        if(esAdmin(formData.email)){
-            alert("¡Bienvenido Administrador!");
-            navigate("/admin");
+            showNotification({
+                type: 'success',
+                title: 'Cuenta creada',
+                message: mensaje,
+            });
+
+            navigate("/account");
+            
+        } catch (e) {
+            const errorMessage = e instanceof Error ? e.message : "Error al crear la cuenta";
+            showNotification({
+                type: 'error',
+                title: 'No se pudo crear la cuenta',
+                message: "Error al crear cuenta: " + errorMessage,
+            });
         }
     };
 
@@ -192,11 +242,11 @@ export const RegistroForm = () => {
 
                 <InputField
                     label="Teléfono"
-                    type="tel"
+                    type="number"
                     name="telefono"
-                    value={formData.telefono}
+                    value={String(formData.telefono)}
                     onChange={handleChange}
-                    placeholder="+56 9 1234 5678"
+                    placeholder="56912345678"
                     icon={HiPhone}
                 />
 

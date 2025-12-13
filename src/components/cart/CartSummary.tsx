@@ -2,12 +2,16 @@ import type { CartState } from "../../interfaces/cartInterface";
 import { formatPrice } from "../../utils/formatters";
 import { PromoCodeInput } from "./PromoCodeInput";
 import { UserDiscountInfo } from "./UserDiscountInfo";
-import { useUser } from "../../context/UserContext";
+import { useUser } from "../../context/useUser";
 import { usePedidos } from "../../context/PedidosContext";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/useCart";
+import { useAdmin } from "../../context/useAdmin";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FEATURE_MESSAGES } from "../../constants/messages";
+import { actualizarStockMultiple } from "../../api/productos.service";
+import { crearPedido } from "../../api/pedidos.service";
+import { useNotification } from "../../context/NotificationContext";
 
 interface CartSummaryProps {
     cart: CartState;
@@ -19,8 +23,10 @@ export const CartSummary = ({ cart, onApplyPromoCode, onRemovePromoCode }: CartS
     const { user, isAuthenticated } = useUser();
     const { agregarPedido } = usePedidos();
     const { clearCart } = useCart();
+    const { recargarProductos } = useAdmin();
     const navigate = useNavigate();
     const [isProcessing, setIsProcessing] = useState(false);
+    const { showNotification } = useNotification();
     
     const envio = 0; // Envío gratis 
 
@@ -32,25 +38,55 @@ export const CartSummary = ({ cart, onApplyPromoCode, onRemovePromoCode }: CartS
     // Total con descuentos de usuario y código promocional
     const totalConDescuentos = cart.total - userDiscount;
 
-    const handleProcederPago = () => {
+    const handleProcederPago = async () => {
         // Verificar que el usuario esté logueado
         if (!isAuthenticated || !user) {
-            alert("Debes iniciar sesión para realizar una compra");
+            showNotification({
+                type: 'warning',
+                title: 'Inicia sesión',
+                message: 'Debes iniciar sesión para realizar una compra',
+            });
             navigate("/login");
             return;
         }
 
         // Verificar que haya items en el carrito
         if (cart.items.length === 0) {
-            alert("Tu carrito está vacío");
+            showNotification({
+                type: 'info',
+                title: 'Carrito vacío',
+                message: 'Tu carrito está vacío',
+            });
             return;
         }
 
         setIsProcessing(true);
 
-        // Simular procesamiento de pago
-        setTimeout(() => {
-            // Crear el pedido
+        try {
+            // Preparar items para actualizar stock
+            const itemsParaActualizar = cart.items.map(item => ({
+                productoId: item.id!,
+                cantidad: item.quantity
+            }));
+
+            // Actualizar stock en el backend
+            await actualizarStockMultiple(itemsParaActualizar);
+
+            // Recargar productos para que se actualicen en toda la app
+            await recargarProductos();
+
+            // Crear pedido en la base de datos
+            await crearPedido({
+                userEmail: user.email,
+                items: itemsParaActualizar,
+                subtotal: cart.subtotal,
+                descuentoCodigo: cart.discount,
+                descuentoUsuario: userDiscount,
+                total: totalConDescuentos,
+                codigoPromoAplicado: cart.promoCode?.code
+            });
+
+            // Crear el pedido en contexto local (para compatibilidad)
             agregarPedido({
                 items: cart.items,
                 subtotal: cart.subtotal,
@@ -66,11 +102,23 @@ export const CartSummary = ({ cart, onApplyPromoCode, onRemovePromoCode }: CartS
             setIsProcessing(false);
 
             // Mostrar mensaje de éxito
-            alert("¡Compra realizada exitosamente! \n\nPuedes ver tu pedido en tu perfil.");
+            showNotification({
+                type: 'success',
+                title: 'Compra realizada',
+                message: '¡Compra realizada exitosamente!\n\nPuedes ver tu pedido en tu perfil.',
+            });
 
             // Redirigir a la página de cuenta
             navigate("/account");
-        }, 1500);
+        } catch (error) {
+            setIsProcessing(false);
+            const errorMessage = error instanceof Error ? error.message : "Error al procesar el pago";
+            showNotification({
+                type: 'error',
+                title: 'Error en la compra',
+                message: `Error al procesar la compra: ${errorMessage}\n\nPor favor, intenta de nuevo.`,
+            });
+        }
     };
 
     return (

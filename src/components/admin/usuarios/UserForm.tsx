@@ -12,7 +12,7 @@ export const UserForm = ({ usuario, onSubmit, onCancel }: UserFormProps) => {
     const [formData, setFormData] = useState({
         nombre: '',
         email: '',
-        telefono: '',
+        telefono: 0,
         fechaNacimiento: '',
         direccion: '',
         codigoPromocional: '',
@@ -23,7 +23,7 @@ export const UserForm = ({ usuario, onSubmit, onCancel }: UserFormProps) => {
             setFormData({
                 nombre: usuario.nombre,
                 email: usuario.email,
-                telefono: usuario.telefono,
+                telefono: usuario.telefono ?? 0,
                 fechaNacimiento: usuario.fechaNacimiento,
                 direccion: usuario.direccion,
                 codigoPromocional: usuario.codigoPromocional || '',
@@ -64,6 +64,14 @@ export const UserForm = ({ usuario, onSubmit, onCancel }: UserFormProps) => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
+        if (name === 'telefono') {
+            const numeric = value.replace(/[^0-9]/g, '');
+            setFormData(prev => ({
+                ...prev,
+                telefono: numeric ? Number(numeric) : 0,
+            }));
+            return;
+        }
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -136,13 +144,13 @@ export const UserForm = ({ usuario, onSubmit, onCancel }: UserFormProps) => {
                                     Teléfono *
                                 </label>
                                 <input
-                                    type="tel"
+                                    type="number"
                                     name="telefono"
-                                    value={formData.telefono}
+                                    value={formData.telefono || ''}
                                     onChange={handleChange}
                                     required
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                                    placeholder="+56912345678"
+                                    placeholder="56912345678"
                                 />
                             </div>
 

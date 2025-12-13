@@ -1,6 +1,7 @@
-import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
-import type { CartState, CartAction, CartContextType } from '../interfaces/cartInterface';
+import { useReducer, useEffect, type ReactNode } from 'react';
+import type { CartState, CartAction } from '../interfaces/cartInterface';
 import type { Producto } from '../data/productos';
+import { CartContext } from './CartContextBase';
 
 // Códigos promocionales válidos
 const VALID_PROMO_CODES: Record<string, number> = {
@@ -21,7 +22,7 @@ const initialState: CartState = {
     discount: 0,
 };
 
-// Funciones helper para cálculos
+// Funciones para cálculos
 const calculateSubtotal = (items: CartState['items']): number => {
     return items.reduce((sum, item) => sum + item.precio * item.quantity, 0);
 };
@@ -49,14 +50,29 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
             let newItems;
             if (existingItemIndex > -1) {
-                // Si el producto ya existe, incrementar cantidad
+                // Si el producto ya existe, verificar stock antes de incrementar
+                const currentItem = state.items[existingItemIndex];
+                const stockDisponible = action.payload.stock ?? 0;
+                
+                // No permitir agregar más si ya alcanzamos el stock
+                if (currentItem.quantity >= stockDisponible) {
+                    console.warn(`No se puede agregar más de ${stockDisponible} unidades de ${action.payload.titulo}`);
+                    return state; // No modificar el estado
+                }
+                
                 newItems = state.items.map((item, index) =>
                     index === existingItemIndex
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
             } else {
-                // Si es nuevo, agregarlo con cantidad 1
+                // Si es nuevo, verificar que haya stock disponible
+                const stockDisponible = action.payload.stock ?? 0;
+                if (stockDisponible < 1) {
+                    console.warn(`Producto ${action.payload.titulo} sin stock disponible`);
+                    return state; // No agregar si no hay stock
+                }
+                
                 newItems = [...state.items, { ...action.payload, quantity: 1 }];
             }
 
@@ -110,10 +126,19 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
                 };
             }
 
-            // Actualizar la cantidad
-            const newItems = state.items.map(item =>
-                item.id === id ? { ...item, quantity } : item
-            );
+            // Actualizar la cantidad con validación de stock
+            const newItems = state.items.map(item => {
+                if (item.id === id) {
+                    const stockDisponible = item.stock ?? 0;
+                    // Limitar la cantidad al stock disponible
+                    const cantidadFinal = Math.min(quantity, stockDisponible);
+                    if (quantity > stockDisponible) {
+                        console.warn(`Stock máximo disponible: ${stockDisponible} unidades`);
+                    }
+                    return { ...item, quantity: cantidadFinal };
+                }
+                return item;
+            });
 
             const subtotal = calculateSubtotal(newItems);
             const discount = calculateDiscount(subtotal, state.promoCode);
@@ -164,9 +189,6 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
             return state;
     }
 };
-
-// Crear el contexto
-const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Provider del carrito
 export const CartProvider = ({ children }: { children: ReactNode }) => {
@@ -246,13 +268,4 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             {children}
         </CartContext.Provider>
     );
-};
-
-// Hook personalizado para usar el carrito
-export const useCart = () => {
-    const context = useContext(CartContext);
-    if (!context) {
-        throw new Error('useCart must be used within a CartProvider');
-    }
-    return context;
 };

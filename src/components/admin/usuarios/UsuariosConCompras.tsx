@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { Pedido } from '../../../interfaces/pedidoInterface';
+import type { Pedido, PedidoApi } from '../../../interfaces/pedidoInterface';
+import { listarPedidos } from '../../../api/pedidos.service';
 
 interface UsuarioConCompras {
     email: string;
@@ -13,66 +14,65 @@ const UsuariosConCompras: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const obtenerUsuariosConCompras = () => {
-        try {
-            const savedPedidos = localStorage.getItem('pedidos');
-            
-            if (!savedPedidos) {
-            setUsuariosConCompras([]);
-            setLoading(false);
-            return;
-            }
+        const obtenerUsuariosConCompras = async () => {
+            try {
+                const pedidosApi = await listarPedidos();
 
-            const pedidos: Pedido[] = JSON.parse(savedPedidos).map((p: any) => ({
-            ...p,
-            fecha: new Date(p.fecha)
-            }));
+                // Normalizar fechas
+                const pedidos: Pedido[] = (pedidosApi as PedidoApi[] || []).map((p) => ({
+                    ...p,
+                    id: (p.id ?? '').toString(),
+                    items: p.items || [],
+                    fecha: p.fecha ? new Date(p.fecha) : new Date(),
+                    estado: p.estado || 'completado',
+                    userEmail: p.userEmail || p.usuario?.email,
+                    subtotal: Number(p.subtotal ?? 0),
+                    descuentoCodigo: Number(p.descuentoCodigo ?? 0),
+                    descuentoUsuario: Number(p.descuentoUsuario ?? 0),
+                    total: Number(p.total ?? 0),
+                }));
 
-            // Filtrar solo pedidos completados
-            const pedidosCompletados = pedidos.filter(pedido => pedido.estado === 'completado');
+                // Filtrar completados
+                const pedidosCompletados = pedidos.filter(pedido => pedido.estado === 'completado');
 
-            // Agrupar pedidos por email de usuario
-            const usuariosMap = new Map<string, {
-            cantidadPedidos: number;
-            totalGastado: number;
-            ultimaCompra: Date;
-            }>();
+                const usuariosMap = new Map<string, {
+                    cantidadPedidos: number;
+                    totalGastado: number;
+                    ultimaCompra: Date;
+                }>();
 
-            pedidosCompletados.forEach(pedido => {
-            // Extraer email del ID del pedido (formato: email-timestamp)
-            const email = pedido.id.substring(0, pedido.id.lastIndexOf('-'));
-            
-            if (usuariosMap.has(email)) {
-                const datos = usuariosMap.get(email)!;
-                datos.cantidadPedidos += 1;
-                datos.totalGastado += pedido.total;
-                if (pedido.fecha > datos.ultimaCompra) {
-                datos.ultimaCompra = pedido.fecha;
-                }
-            } else {
-                usuariosMap.set(email, {
-                cantidadPedidos: 1,
-                totalGastado: pedido.total,
-                ultimaCompra: pedido.fecha
+                pedidosCompletados.forEach(pedido => {
+                    const email = pedido.usuario?.email || pedido.userEmail || pedido.id?.toString() || 'desconocido';
+                    const total = Number(pedido.total ?? 0);
+                    const fecha = pedido.fecha instanceof Date ? pedido.fecha : new Date(pedido.fecha);
+
+                    if (usuariosMap.has(email)) {
+                        const datos = usuariosMap.get(email)!;
+                        datos.cantidadPedidos += 1;
+                        datos.totalGastado += total;
+                        if (fecha > datos.ultimaCompra) {
+                            datos.ultimaCompra = fecha;
+                        }
+                    } else {
+                        usuariosMap.set(email, {
+                            cantidadPedidos: 1,
+                            totalGastado: total,
+                            ultimaCompra: fecha,
+                        });
+                    }
                 });
+
+                const usuariosArray: UsuarioConCompras[] = Array.from(usuariosMap.entries())
+                    .map(([email, datos]) => ({ email, ...datos }))
+                    .sort((a, b) => b.totalGastado - a.totalGastado);
+
+                setUsuariosConCompras(usuariosArray);
+            } catch (error) {
+                console.error('Error al obtener usuarios con compras:', error);
+                setUsuariosConCompras([]);
+            } finally {
+                setLoading(false);
             }
-            });
-
-            // Convertir Map a array y ordenar por total gastado (descendente)
-            const usuariosArray: UsuarioConCompras[] = Array.from(usuariosMap.entries())
-            .map(([email, datos]) => ({
-                email,
-                ...datos
-            }))
-            .sort((a, b) => b.totalGastado - a.totalGastado);
-
-            setUsuariosConCompras(usuariosArray);
-        } catch (error) {
-            console.error('Error al obtener usuarios con compras:', error);
-            setUsuariosConCompras([]);
-        } finally {
-            setLoading(false);
-        }
         };
 
         obtenerUsuariosConCompras();

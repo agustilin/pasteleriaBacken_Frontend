@@ -22,7 +22,6 @@ export interface CartState {
     discount: number;
 }
 
-// Acciones del reducer
 export type CartAction =
     | { type: 'ADD_TO_CART'; payload: Producto }
     | { type: 'REMOVE_FROM_CART'; payload: number } // id del producto

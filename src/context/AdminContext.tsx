@@ -2,16 +2,19 @@ import { useState, useEffect, type ReactNode } from 'react';
 import type { Producto } from '../data/productos'; 
 import { fetchProductos, createProducto, updateProducto, deleteProducto } from '../api/productos.service';
 import type { Usuario } from '../data/Usuario';
+import { fetchUsuarios, createUsuario, updateUsuario as updateUsuarioAPI, deleteUsuario } from '../api/usuarios.service';
+import { listarPedidosUsuario } from '../api/pedidos.service';
 import { AdminContext } from './AdminContextBase';
+import { useNotification } from './NotificationContext';
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const { showNotification } = useNotification();
 
-  // Cargar desde API
-    useEffect(() => {
-    const load = async () => {
+  // Función para cargar productos
+    const loadProductos = async () => {
         setLoading(true);
         setError(null);
         try {
@@ -30,32 +33,68 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         }
     };
-    load();
+
+  // Cargar desde API al montar
+    useEffect(() => {
+    loadProductos();
     }, []);
 
-    // Estado de usuarios
-    const [usuarios, setUsuarios] = useState<Usuario[]>(() => {
-        const savedUsuarios = localStorage.getItem('usuariosRegistrados');
-        if (savedUsuarios) {
+    // Estado de usuarios - cargar desde API
+    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+
+    // Cargar usuarios desde API al iniciar
+    useEffect(() => {
+        const loadUsuarios = async () => {
             try {
-                return JSON.parse(savedUsuarios);
-            } catch {
-                return [];
+                const data = await fetchUsuarios();
+                setUsuarios(data);
+            } catch (e: unknown) {
+                console.error('Error cargando usuarios:', e);
+                // No bloqueamos la app si hay error en usuarios
+            }
+        };
+        loadUsuarios();
+    }, []);
+
+    // Funciones CRUD para usuarios
+    const agregarUsuario = async (nuevo: Omit<Usuario, 'id'>) => {
+        const creado = await createUsuario(nuevo);
+        setUsuarios(prev => [...prev, creado]);
+    };
+
+    const actualizarUsuario = async (id: number, usuarioActualizado: Partial<Usuario>) => {
+        const actualizado = await updateUsuarioAPI(id, usuarioActualizado);
+        setUsuarios(prev => prev.map(u => u.id === id ? actualizado : u));
+    };
+
+    const eliminarUsuario = async (id: number) => {
+        // Bloquear eliminación si el usuario tiene pedidos
+        const usuario = usuarios.find(u => u.id === id);
+        if (usuario?.email) {
+            try {
+                const pedidos = await listarPedidosUsuario(usuario.email);
+                if (pedidos.length > 0) {
+                    showNotification({
+                        type: 'warning',
+                        title: 'Acción bloqueada',
+                        message: 'No se puede eliminar al usuario porque tiene pedidos registrados.',
+                    });
+                    return;
+                }
+            } catch (e) {
+                console.error('Error verificando pedidos del usuario:', e);
+                showNotification({
+                    type: 'error',
+                    title: 'No se pudo verificar',
+                    message: 'No se pudo verificar si el usuario tiene pedidos. Intenta nuevamente.',
+                });
+                return;
             }
         }
-        return [];
-    });
 
-    // Guardar productos en localStorage cuando cambien
-    //useEffect(() => {
-       // localStorage.setItem('productos', JSON.stringify(productos));
-    //}, [productos]);
-
-    
-    // Guardar usuarios en localStorage cuando cambien
-    useEffect(() => {
-        localStorage.setItem('usuariosRegistrados', JSON.stringify(usuarios));
-    }, [usuarios]);
+        await deleteUsuario(id);
+        setUsuarios(prev => prev.filter(u => u.id !== id));
+    };
 
     // Funciones CRUD para productos
     const agregarProducto = async (nuevo: Omit<Producto, 'id'>) => {
@@ -73,15 +112,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         setProductos(prev => prev.filter(p => p.id !== id));
     };
 
-    // Funciones CRUD para usuarios
-    const actualizarUsuario = (email: string, usuarioActualizado: Partial<Usuario>) => {
-        setUsuarios(usuarios.map(u => 
-            u.email === email ? { ...u, ...usuarioActualizado } : u
-        ));
-    };
-
-    const eliminarUsuario = (email: string) => {
-        setUsuarios(usuarios.filter(u => u.email !== email));
+    const recargarProductos = async () => {
+        await loadProductos();
     };
 
     return (
@@ -93,7 +125,9 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
                 agregarProducto,
                 actualizarProducto,
                 eliminarProducto,
+                recargarProductos,
                 usuarios,
+                agregarUsuario,
                 actualizarUsuario,
                 eliminarUsuario,
             }}

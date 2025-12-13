@@ -3,6 +3,7 @@ import { useAdmin } from '../../../context/useAdmin';
 import { UserItem } from './UserItem';
 import { UserForm } from './UserForm';
 import type { Usuario } from '../../../data/Usuario';
+import { useNotification } from '../../../context/NotificationContext';
 
 export const UserList = () => {
     const { usuarios, actualizarUsuario, eliminarUsuario } = useAdmin();
@@ -10,6 +11,7 @@ export const UserList = () => {
     const [editingUser, setEditingUser] = useState<Usuario | undefined>(undefined);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterBeneficios, setFilterBeneficios] = useState<string>('todos');
+    const { showNotification } = useNotification();
 
     // Filtrar usuarios
     const usuariosFiltrados = usuarios.filter(usuario => {
@@ -34,13 +36,17 @@ export const UserList = () => {
     };
 
     const handleSubmit = (usuario: Usuario) => {
-        if (editingUser) {
+        if (editingUser && editingUser.id) {
             // Actualizar usuario existente
-            actualizarUsuario(usuario.email, usuario);
+            actualizarUsuario(editingUser.id, usuario);
         } else {
             // No permitir agregar usuarios desde el admin (solo editar)
             // Los usuarios deben registrarse desde el formulario de registro
-            alert('Los usuarios deben registrarse desde la página de registro');
+            showNotification({
+                type: 'info',
+                title: 'Registro de usuarios',
+                message: 'Los usuarios deben registrarse desde la página de registro',
+            });
             return;
         }
         setShowForm(false);

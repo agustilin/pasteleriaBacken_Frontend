@@ -4,14 +4,16 @@ import type { Usuario } from '../../../data/Usuario';
 interface UserItemProps {
     usuario: Usuario;
     onEdit: (usuario: Usuario) => void;
-    onDelete: (email: string) => void;
+    onDelete: (id: number) => void;
 }
 
 export const UserItem = ({ usuario, onEdit, onDelete }: UserItemProps) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const handleDelete = () => {
-        onDelete(usuario.email);
+        if (usuario.id) {
+            onDelete(usuario.id);
+        }
         setShowDeleteConfirm(false);
     };
 

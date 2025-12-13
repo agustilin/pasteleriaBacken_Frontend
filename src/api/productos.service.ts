@@ -36,3 +36,8 @@ export const updateProducto = async (id: number, p: Partial<Producto>): Promise<
 export const deleteProducto = async (id: number): Promise<void> => {
     await api.delete(`/productos/${id}`);
 };
+
+export const actualizarStockMultiple = async (items: { productoId: number; cantidad: number }[]): Promise<void> => {
+    const { data } = await api.post("/productos/actualizar-stock", items);
+    return data;
+};

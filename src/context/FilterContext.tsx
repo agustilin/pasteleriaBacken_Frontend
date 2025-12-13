@@ -39,7 +39,7 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
         }));
     };
 
-    // Toggle tamaño (agregar/quitar)
+    // Toggle tamaño 
     const toggleTamanio = (tamanio: string) => {
         setFilters(prev => ({
             ...prev,
