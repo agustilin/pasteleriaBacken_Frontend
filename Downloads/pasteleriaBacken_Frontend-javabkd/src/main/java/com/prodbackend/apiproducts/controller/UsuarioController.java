@@ -26,7 +26,6 @@ public class UsuarioController {
     @GetMapping("/admin")
     public ResponseEntity<List<Usuario>> listarTodosLosUsuarios() {
         // Endpoint para listar todos los usuarios incluyendo admins
-
         List<Usuario> usuarios = usuarioService.listarTodosLosUsuarios();
         return ResponseEntity.ok(usuarios);
     }

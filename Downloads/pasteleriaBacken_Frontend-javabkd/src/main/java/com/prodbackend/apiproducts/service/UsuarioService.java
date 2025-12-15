@@ -37,11 +37,31 @@ public class UsuarioService {
     }
 
     public Usuario actualizarUsuario(Long id, Usuario usuarioActualizado) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new IllegalArgumentException("El usuario no existe");
-        }
+        Usuario existente = usuarioRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("El usuario no existe"));
+
+        // No permitir cambio de email ni password vía este endpoint
+        // Conservar email y password originales
         usuarioActualizado.setId(id);
-        return usuarioRepository.save(usuarioActualizado);
+        usuarioActualizado.setEmail(existente.getEmail());
+        usuarioActualizado.setPassword(existente.getPassword());
+
+        // Normalizar tipos: telefono como String, fechaNacimiento como LocalDate ya debería venir correctamente
+        // Copiar campos editables
+        existente.setNombre(usuarioActualizado.getNombre());
+        existente.setTelefono(usuarioActualizado.getTelefono());
+        existente.setFechaNacimiento(usuarioActualizado.getFechaNacimiento());
+        existente.setDireccion(usuarioActualizado.getDireccion());
+        existente.setCodigoPromocional(usuarioActualizado.getCodigoPromocional());
+        existente.setEsDuocUC(usuarioActualizado.getEsDuocUC());
+        existente.setEsMayorDe50(usuarioActualizado.getEsMayorDe50());
+        existente.setTieneDescuentoFelices50(usuarioActualizado.getTieneDescuentoFelices50());
+        existente.setDescuentoPorcentaje(usuarioActualizado.getDescuentoPorcentaje());
+        existente.setTortaGratisCumpleanosDisponible(usuarioActualizado.getTortaGratisCumpleanosDisponible());
+        existente.setTortaGratisCumpleanosUsada(usuarioActualizado.getTortaGratisCumpleanosUsada());
+        existente.setAñoTortaGratisCumpleanos(usuarioActualizado.getAñoTortaGratisCumpleanos());
+
+        return usuarioRepository.save(existente);
     }
 
     public void eliminarUsuario(Long id) {
