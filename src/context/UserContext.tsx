@@ -90,6 +90,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const updateUserProfile = (usuario: Usuario) => {
+        setUser(usuario);
+    };
+
     return (
         <UserContext.Provider
             value={{
@@ -100,6 +104,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 loading,
                 error,
                 updateUserData,
+                updateUserProfile,
             }}
         >
             {children}

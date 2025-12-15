@@ -1,13 +1,14 @@
-import { HiLogout } from "react-icons/hi";
+import { HiLogout, HiPencil } from "react-icons/hi";
 import { calcularEdad, type Usuario } from "../../data/Usuario";
 import { ActiveBenefits } from "./ActiveBenefits";
 
 interface UserProfileProps {
     user: Usuario;
     onLogout: () => void;
+    onEdit?: () => void;
 }
 
-export const UserProfile = ({ user, onLogout }: UserProfileProps) => {
+export const UserProfile = ({ user, onLogout, onEdit }: UserProfileProps) => {
     const iniciales = user.nombre
         .split(' ')
         .map(n => n[0])
@@ -29,13 +30,24 @@ export const UserProfile = ({ user, onLogout }: UserProfileProps) => {
                             <p className="text-sm text-gray-500">{calcularEdad(user.fechaNacimiento)} años</p>
                         </div>
                     </div>
-                    <button
-                        onClick={onLogout}
-                        className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-rose-600 transition-colors"
-                    >
-                        <HiLogout size={20} />
-                        <span>Cerrar Sesión</span>
-                    </button>
+                    <div className="flex gap-2">
+                        {onEdit && (
+                            <button
+                                onClick={onEdit}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                            >
+                                <HiPencil size={20} />
+                                <span>Editar Perfil</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={onLogout}
+                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-rose-600 transition-colors"
+                        >
+                            <HiLogout size={20} />
+                            <span>Cerrar Sesión</span>
+                        </button>
+                    </div>
                 </div>
                 <ActiveBenefits user={user} />
             </div>

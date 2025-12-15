@@ -9,6 +9,7 @@ export interface UserContextType {
     loading: boolean;
     error: string | null;
     updateUserData: (usuarioActualizado: Partial<Usuario>) => Promise<void>;
+    updateUserProfile?: (usuario: Usuario) => void;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(undefined);

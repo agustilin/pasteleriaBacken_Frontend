@@ -1,4 +1,5 @@
 import { api } from "./client";
+import type { AxiosError } from "axios";
 
 export interface Usuario {
   id?: number;
@@ -54,8 +55,29 @@ export const createUsuario = async (usuario: Omit<Usuario, "id">): Promise<Usuar
 };
 
 export const updateUsuario = async (id: number, usuario: Partial<Usuario>): Promise<Usuario> => {
-  const { data } = await api.put(`/usuarios/${id}`, usuario);
-  return data;
+  try {
+    // Adaptar tipos al backend: telefono como string, no enviar email si no cambia
+    const payload: Record<string, unknown> = { ...usuario } as Record<string, unknown>;
+    if (payload.telefono !== undefined && payload.telefono !== null) {
+      payload.telefono = String(payload.telefono);
+    }
+    // Evitar enviar email vacío o undefined
+    if (payload.email === undefined) {
+      delete payload.email;
+    }
+    const { data } = await api.put(`/usuarios/${id}`, payload);
+    return data;
+  } catch (e: unknown) {
+    let message = 'Error actualizando usuario';
+    const err = e as AxiosError<unknown>;
+    const respData = err?.response?.data as { message?: string } | undefined;
+    if (respData?.message) {
+      message = respData.message;
+    } else if (typeof err?.message === 'string') {
+      message = err.message;
+    }
+    throw new Error(message);
+  }
 };
 
 export const deleteUsuario = async (id: number): Promise<void> => {
